@@ -40,5 +40,16 @@ pipeline {
                 } 
             }
         }
+        stage('deploy application') {
+            steps {
+                script {
+                    // Pull and run the Docker container
+                    def dockerImage = 'misbahashim/maven-java-sample-app'
+                    def dockerTag = 'latest'
+                    bat "docker pull ${dockerImage}:${dockerTag}"
+                    bat "docker run -d -p 8001:8001 --name maven-app ${dockerImage}:${dockerTag}"
+                }
+            }
+        }
     }
 }
