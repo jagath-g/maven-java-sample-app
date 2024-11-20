@@ -1,38 +1,44 @@
 pipeline {
     agent any
-
+    tools {
+        jdk 'JAVA'  
+    }
     stages {
-        
-
-        stage('Build') {
+        stage('git checkout') {
             steps {
-             sh  "mvn clean compile"
+                git branch: 'master', url: 'https://github.com/MisbaHashimT/maven-java-sample-app.git'
             }
         }
-
-        stage('Sonar Scan') {
+        stage('compile') {
             steps {
-            script {
-
-               
-             withSonarQubeEnv() {
-                sh "mvn clean verify sonar:sonar -Dsonar.projectKey=petclinic-via-plugin"
-                }
-
-            }
-            
-        
+                bat 'mvn spring-javaformat:apply'
+                bat 'mvn clean compile'
             }
         }
+        stage('built') {
+            steps {
+                bat 'mvn package'
+            }
+        }
+        stage('push docker image') {
+            steps {
+               script {
+                    // Docker image details
+                    def dockerImage = 'misbahashim/maven-java-sample-app'
+                    def dockerTag = 'latest'
 
-       stage('Quality Gate') {
-           steps {
-               waitForQualityGate abortPipeline: true
-           }
+                    // Docker login
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    }
 
-          
-       }
+                    // Build the Docker image
+                    bat "docker build -t ${dockerImage}:${dockerTag} ."
 
-       
+                    // Push the Docker image to Docker Hub
+                    bat "docker push ${dockerImage}:${dockerTag}"
+                } 
+            }
+        }
     }
 }
