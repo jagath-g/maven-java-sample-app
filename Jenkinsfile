@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('git pull') {
             steps {
-              git branch: 'master', url: 'https://github.com/MisbaHashimT/maven-java-sample-app.git'
+              git branch: 'master', url: 'https://github.com/jagath-g/maven-java-sample-app.git'
             }
         }
         stage('Compile') {
