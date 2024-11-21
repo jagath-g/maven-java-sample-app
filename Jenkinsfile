@@ -1,30 +1,38 @@
 pipeline {
     agent any
+    
     tools {
-        jdk 'JAVA'  
+        jdk 'JAVA'
     }
+
+
     stages {
-        stage('git checkout') {
+        stage('git pull') {
             steps {
-                git branch: 'master', url: 'https://github.com/MisbaHashimT/maven-java-sample-app.git'
+              git branch: 'master', url: 'https://github.com/MisbaHashimT/maven-java-sample-app.git'
             }
         }
-        stage('compile') {
+        stage('Compile') {
             steps {
-                bat 'mvn spring-javaformat:apply'
-                bat 'mvn clean compile'
+                bat "mvn compile"
             }
         }
-        stage('built') {
+        
+        stage('Test') {
             steps {
-                bat 'mvn package'
+                bat "mvn test"
+            }
+        }
+        stage('Build') {
+            steps {
+               bat "mvn package"
             }
         }
         stage('push docker image') {
             steps {
                script {
                     // Docker image details
-                    def dockerImage = 'misbahashim/maven-java-sample-app'
+                    def dockerImage = 'jagathgiridharan/maven-java-sample-app'
                     def dockerTag = 'latest'
 
                     // Docker login
@@ -44,12 +52,13 @@ pipeline {
             steps {
                 script {
                     // Pull and run the Docker container
-                    def dockerImage = 'misbahashim/maven-java-sample-app'
+                    def dockerImage = 'jagathgiridharan/maven-java-sample-app'
                     def dockerTag = 'latest'
                     bat "docker pull ${dockerImage}:${dockerTag}"
                     bat "docker run -d -p 8001:8001 --name maven-app ${dockerImage}:${dockerTag}"
                 }
             }
         }
+        
     }
 }
